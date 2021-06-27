@@ -12,7 +12,7 @@ class MainActivity : AppCompatActivity() {
 
     private val viewModel: MainViewModel by lazy { MainViewModel(RepositoryImpl(RetrofitImpl())) }
     private val adapter: MoviesRVAdapter by lazy { MoviesRVAdapter() }
-    private val listMovies: RecyclerView by lazy { findViewById(R.id.list_movies) }
+    private lateinit var listMovies: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -23,6 +23,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initView() {
+        listMovies = findViewById(R.id.list_movies)
         listMovies.layoutManager = LinearLayoutManager(applicationContext)
         listMovies.adapter = adapter
     }
@@ -34,6 +35,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setDataToAdapter(moviesList: List<Movie>) {
-        adapter.setData(moviesList = moviesList)
+        adapter.setData(moviesList)
     }
 }

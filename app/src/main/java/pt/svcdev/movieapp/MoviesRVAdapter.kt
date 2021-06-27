@@ -17,8 +17,8 @@ class MoviesRVAdapter: RecyclerView.Adapter<MoviesRVAdapter.Holder>() {
         private val imgMoviePoster = view.findViewById<ImageView>(R.id.img_movie_poster)
         private val txtMovieTitle = view.findViewById<TextView>(R.id.txt_movie_title)
 
-        fun bind(moviePoster: Uri, movieTitle: String) {
-            imgMoviePoster.setImageURI(moviePoster)
+        fun bind(moviePoster: String, movieTitle: String) {
+            imgMoviePoster.setImageURI(Uri.parse(moviePoster))
             txtMovieTitle.text = movieTitle
         }
     }
@@ -31,7 +31,7 @@ class MoviesRVAdapter: RecyclerView.Adapter<MoviesRVAdapter.Holder>() {
         )
 
     override fun onBindViewHolder(holder: Holder, position: Int) =
-        holder.bind(moviesList[position].poster_path as Uri, moviesList[position].title)
+        holder.bind(moviesList[position].poster_path, moviesList[position].title)
 
     override fun getItemCount(): Int = moviesList.size
 
