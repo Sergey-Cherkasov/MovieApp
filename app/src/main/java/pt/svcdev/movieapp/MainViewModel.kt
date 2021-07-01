@@ -10,28 +10,54 @@ import pt.svcdev.movieapp.repository.Repository
 
 class MainViewModel(private val repository: Repository<MoviesList>) : ViewModel() {
 
-    private val liveDataMovies: MutableLiveData<List<Movie>> = MutableLiveData()
-    private val liveDataMoviesForObserver: LiveData<List<Movie>> = liveDataMovies
+    private val liveDataMovies = MutableLiveData<ScreenState>()
+    private val liveDataMoviesForObserver: LiveData<ScreenState> = liveDataMovies
 
     private val coroutineScope = CoroutineScope(
         Dispatchers.Main +
-                SupervisorJob()
+                SupervisorJob() +
+                CoroutineExceptionHandler { _, throwable -> handleError(throwable) }
     )
 
     fun subscribeLiveData() = liveDataMoviesForObserver
 
     fun getData() {
-        cancelJob()
+//        cancelJob()
         coroutineScope.launch {
             withContext(Dispatchers.IO) {
-                val result = repository.getData().moviesList
-                liveDataMovies.postValue(result)
+                val searchResponse = repository.getData()
+                val result = searchResponse.moviesList
+                val id = searchResponse.id
+                if (result != null && id != null) {
+                    liveDataMovies.postValue(ScreenState.Success(result))
+                } else {
+                    liveDataMovies.postValue(ScreenState.Error(
+                        Throwable("Search results or total count are null")
+                    ))
+                }
             }
         }
+    }
+
+    private fun handleError(error: Throwable) {
+        liveDataMovies.postValue(ScreenState.Error(
+            Throwable(error.message ?: "Response is null or unsuccessful")
+        ))
     }
 
     private fun cancelJob() {
         coroutineScope.coroutineContext.cancelChildren()
     }
 
+    override fun onCleared() {
+        cancelJob()
+        super.onCleared()
+    }
+
+}
+
+sealed class ScreenState {
+    object Loading : ScreenState()
+    data class Success(val result: List<Movie>) : ScreenState()
+    data class Error(val error: Throwable) : ScreenState()
 }

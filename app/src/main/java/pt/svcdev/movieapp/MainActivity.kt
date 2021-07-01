@@ -1,10 +1,10 @@
 package pt.svcdev.movieapp
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import pt.svcdev.movieapp.model.Movie
 import pt.svcdev.movieapp.repository.RepositoryImpl
 import pt.svcdev.movieapp.repository.datasource.RetrofitImpl
 
@@ -29,12 +29,20 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initViewModel() {
-        viewModel.subscribeLiveData().observe(this@MainActivity, {
-            setDataToAdapter(it)
-        })
+        viewModel.subscribeLiveData().observe(this) {
+            onStateChanged(it)
+        }
     }
 
-    private fun setDataToAdapter(moviesList: List<Movie>) {
-        adapter.setData(moviesList)
+    private fun onStateChanged(screenState: ScreenState) {
+        when(screenState) {
+            is ScreenState.Success -> {
+                adapter.setData(screenState.result)
+            }
+            is ScreenState.Error -> {
+                Toast.makeText(this, screenState.error.message, Toast.LENGTH_SHORT).show()
+            }
+            else -> {}
+        }
     }
 }
