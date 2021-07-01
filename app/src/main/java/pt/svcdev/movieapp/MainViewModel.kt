@@ -22,7 +22,7 @@ class MainViewModel(private val repository: Repository<MoviesList>) : ViewModel(
     fun subscribeLiveData() = liveDataMoviesForObserver
 
     fun getData() {
-        cancelJob()
+//        cancelJob()
         coroutineScope.launch {
             withContext(Dispatchers.IO) {
                 val searchResponse = repository.getData()
@@ -50,8 +50,8 @@ class MainViewModel(private val repository: Repository<MoviesList>) : ViewModel(
     }
 
     override fun onCleared() {
-        super.onCleared()
         cancelJob()
+        super.onCleared()
     }
 
 }

@@ -3,18 +3,23 @@ package pt.svcdev.movieapp
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.nhaarman.mockito_kotlin.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import org.junit.Assert
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
+import org.mockito.Mockito
 import org.mockito.Mockito.`when`
+import org.mockito.Mockito.times
 import org.mockito.MockitoAnnotations
 import org.robolectric.annotation.Config
 import pt.svcdev.movieapp.model.MoviesList
 import pt.svcdev.movieapp.repository.RepositoryImpl
+import java.util.*
 
 @RunWith(AndroidJUnit4::class)
 //@Config(sdk = [Build.VERSION_CODES.O_MR1])
@@ -80,6 +85,31 @@ class MainViewModelTest {
                 mainViewModel.getData()
                 val value = liveData.value as ScreenState.Error
                 Assert.assertEquals(value.error.message, EXCEPTION_TEXT)
+            } finally {
+                liveData.removeObserver(observer)
+            }
+        }
+    }
+
+    @Test
+    fun `MainViewModel test getData()`() {
+        testCoroutineRule.runBlockingTest {
+            `when`(repository.getData()).thenReturn(MoviesList(1, listOf()))
+            mainViewModel.getData()
+            verify(repository, times(1)).getData()
+        }
+    }
+
+    @Test
+    fun `MainViewModel test liveData return value is NotNull`() {
+        testCoroutineRule.runBlockingTest {
+            val observer = Observer<ScreenState> {}
+            val liveData = mainViewModel.subscribeLiveData()
+            `when`(repository.getData()).thenReturn(MoviesList(1, listOf()))
+            try {
+                liveData.observeForever(observer)
+                mainViewModel.getData()
+                Assert.assertNotNull(liveData.value)
             } finally {
                 liveData.removeObserver(observer)
             }
